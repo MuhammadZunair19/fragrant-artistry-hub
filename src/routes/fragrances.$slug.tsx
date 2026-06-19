@@ -111,7 +111,7 @@ function ProductPage() {
   }, [product.id, product.variants]);
 
   const selected =
-    product.variants.find((v) => v.id === selectedVariantId) ??
+    product.variants.find((v: import("@/lib/product-types").Variant) => v.id === selectedVariantId) ??
     product.variants[0];
 
   const [justAdded, setJustAdded] = useState(false);
@@ -208,7 +208,7 @@ function ProductPage() {
             <div className="mb-10">
               <p className="eyebrow mb-4">Volume</p>
               <div className="flex gap-3 flex-wrap">
-                {product.variants.map((v) => (
+                {(product.variants as import("@/lib/product-types").Variant[]).map((v) => (
                   <button
                     key={v.id}
                     type="button"
@@ -290,7 +290,7 @@ function ProductPage() {
               </Link>
             </Reveal>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
-              {related.map((r, i) => (
+              {(related as import("@/lib/product-types").ProductSummary[]).map((r, i: number) => (
                 <Reveal key={r.id} delay={i * 0.06}>
                   <ProductCard product={r} variant="grid" />
                 </Reveal>

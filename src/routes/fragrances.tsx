@@ -58,7 +58,7 @@ function FragrancesPage() {
 
   function setFilter(patch: Partial<typeof search>) {
     navigate({
-      search: (prev) => ({ ...prev, ...patch }),
+      search: (prev: Record<string, unknown>) => ({ ...prev, ...patch }),
       replace: true,
     });
   }
@@ -89,13 +89,13 @@ function FragrancesPage() {
           <Filter
             label="Maison"
             value={search.brand}
-            options={brands.map((b) => ({ value: b.slug, label: b.name }))}
+            options={(brands as import("@/lib/product-types").Brand[]).map((b) => ({ value: b.slug, label: b.name }))}
             onChange={(v) => setFilter({ brand: v })}
           />
           <Filter
             label="Family"
             value={search.family}
-            options={families.map((f) => ({ value: f.slug, label: f.name }))}
+            options={(families as import("@/lib/product-types").FragranceFamily[]).map((f) => ({ value: f.slug, label: f.name }))}
             onChange={(v) => setFilter({ family: v })}
           />
           <Filter
@@ -175,7 +175,7 @@ function FragrancesPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 md:gap-12">
-            {products.map((p, i) => (
+            {(products as import("@/lib/product-types").ProductSummary[]).map((p, i: number) => (
               <Reveal key={p.id} delay={Math.min(i * 0.04, 0.4)}>
                 <ProductCard product={p} variant="grid" />
               </Reveal>

@@ -34,7 +34,7 @@ function WishlistPage() {
   useEffect(() => setHydrated(true), []);
 
   const items: ProductSummary[] = hydrated
-    ? products.filter((p) => wishlist.includes(p.slug))
+    ? (products as ProductSummary[]).filter((p) => wishlist.includes(p.slug))
     : [];
 
   return (

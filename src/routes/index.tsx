@@ -47,7 +47,7 @@ export const Route = createFileRoute("/")({
 
 function HomePage() {
   const { featured, bestSellers, collections } = Route.useLoaderData();
-  const featuredCollections = collections.filter((c) => c.is_featured);
+  const featuredCollections = (collections as import("@/lib/product-types").Collection[]).filter((c) => c.is_featured);
 
   return (
     <div className="bg-background text-foreground">
@@ -144,7 +144,7 @@ function HomePage() {
           </Reveal>
 
           <div className="flex gap-6 md:gap-8 overflow-x-auto no-scrollbar pb-8 snap-x snap-mandatory">
-            {featured.map((p, i) => (
+            {(featured as import("@/lib/product-types").ProductSummary[]).map((p, i: number) => (
               <Reveal key={p.id} delay={i * 0.08} className="snap-start">
                 <ProductCard product={p} variant="rail" />
               </Reveal>
@@ -163,7 +163,7 @@ function HomePage() {
             </h2>
           </Reveal>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
-            {featuredCollections.map((c, i) => (
+            {featuredCollections.map((c, i: number) => (
               <Reveal key={c.id} delay={i * 0.1}>
                 <Link
                   to="/collections/$slug"
@@ -240,7 +240,7 @@ function HomePage() {
             </h2>
           </Reveal>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 md:gap-10">
-            {bestSellers.map((p, i) => (
+            {(bestSellers as import("@/lib/product-types").ProductSummary[]).map((p, i: number) => (
               <Reveal key={p.id} delay={i * 0.08}>
                 <ProductCard product={p} variant="grid" />
               </Reveal>

@@ -104,7 +104,7 @@ function BrandPage() {
             </p>
           ) : (
             <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 md:gap-12">
-              {products.map((p, i) => (
+              {(products as import("@/lib/product-types").ProductSummary[]).map((p, i: number) => (
                 <Reveal key={p.id} delay={Math.min(i * 0.05, 0.4)}>
                   <ProductCard product={p} variant="grid" />
                 </Reveal>
