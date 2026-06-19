@@ -142,14 +142,13 @@ export function CartDrawer() {
                 <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
                   Shipping and taxes calculated at checkout.
                 </p>
-                <button
-                  type="button"
-                  disabled
-                  title="Checkout will open in the next release"
-                  className="w-full bg-foreground text-background py-4 eyebrow !text-background !tracking-[0.3em] disabled:opacity-60 disabled:cursor-not-allowed hover:bg-accent hover:text-accent-foreground transition-colors"
+                <Link
+                  to="/checkout"
+                  onClick={() => setOpen(false)}
+                  className="block w-full bg-foreground text-center text-background py-4 eyebrow !text-background !tracking-[0.3em] hover:bg-accent hover:text-accent-foreground transition-colors"
                 >
                   Proceed to Checkout
-                </button>
+                </Link>
                 <Link
                   to="/fragrances"
                   onClick={() => setOpen(false)}

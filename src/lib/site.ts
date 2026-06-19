@@ -17,4 +17,7 @@ export const NAV_LEFT = [
   { label: "Discover", to: "/collections/noir-series" },
 ] as const;
 
-export const NAV_RIGHT = [{ label: "Journal", to: "/journal" }] as const;
+export const NAV_RIGHT = [
+  { label: "Journal", to: "/journal" },
+  { label: "Account", to: "/account" },
+] as const;
