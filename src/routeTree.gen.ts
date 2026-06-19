@@ -11,8 +11,8 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WishlistRouteImport } from './routes/wishlist'
 import { Route as JournalRouteImport } from './routes/journal'
-import { Route as FragrancesRouteImport } from './routes/fragrances'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as FragrancesIndexRouteImport } from './routes/fragrances.index'
 import { Route as MaisonsSlugRouteImport } from './routes/maisons.$slug'
 import { Route as FragrancesSlugRouteImport } from './routes/fragrances.$slug'
 import { Route as CollectionsSlugRouteImport } from './routes/collections.$slug'
@@ -27,14 +27,14 @@ const JournalRoute = JournalRouteImport.update({
   path: '/journal',
   getParentRoute: () => rootRouteImport,
 } as any)
-const FragrancesRoute = FragrancesRouteImport.update({
-  id: '/fragrances',
-  path: '/fragrances',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FragrancesIndexRoute = FragrancesIndexRouteImport.update({
+  id: '/fragrances/',
+  path: '/fragrances/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MaisonsSlugRoute = MaisonsSlugRouteImport.update({
@@ -43,9 +43,9 @@ const MaisonsSlugRoute = MaisonsSlugRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const FragrancesSlugRoute = FragrancesSlugRouteImport.update({
-  id: '/$slug',
-  path: '/$slug',
-  getParentRoute: () => FragrancesRoute,
+  id: '/fragrances/$slug',
+  path: '/fragrances/$slug',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const CollectionsSlugRoute = CollectionsSlugRouteImport.update({
   id: '/collections/$slug',
@@ -55,69 +55,70 @@ const CollectionsSlugRoute = CollectionsSlugRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/fragrances': typeof FragrancesRouteWithChildren
   '/journal': typeof JournalRoute
   '/wishlist': typeof WishlistRoute
   '/collections/$slug': typeof CollectionsSlugRoute
   '/fragrances/$slug': typeof FragrancesSlugRoute
   '/maisons/$slug': typeof MaisonsSlugRoute
+  '/fragrances/': typeof FragrancesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/fragrances': typeof FragrancesRouteWithChildren
   '/journal': typeof JournalRoute
   '/wishlist': typeof WishlistRoute
   '/collections/$slug': typeof CollectionsSlugRoute
   '/fragrances/$slug': typeof FragrancesSlugRoute
   '/maisons/$slug': typeof MaisonsSlugRoute
+  '/fragrances': typeof FragrancesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/fragrances': typeof FragrancesRouteWithChildren
   '/journal': typeof JournalRoute
   '/wishlist': typeof WishlistRoute
   '/collections/$slug': typeof CollectionsSlugRoute
   '/fragrances/$slug': typeof FragrancesSlugRoute
   '/maisons/$slug': typeof MaisonsSlugRoute
+  '/fragrances/': typeof FragrancesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/fragrances'
     | '/journal'
     | '/wishlist'
     | '/collections/$slug'
     | '/fragrances/$slug'
     | '/maisons/$slug'
+    | '/fragrances/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/fragrances'
     | '/journal'
     | '/wishlist'
     | '/collections/$slug'
     | '/fragrances/$slug'
     | '/maisons/$slug'
+    | '/fragrances'
   id:
     | '__root__'
     | '/'
-    | '/fragrances'
     | '/journal'
     | '/wishlist'
     | '/collections/$slug'
     | '/fragrances/$slug'
     | '/maisons/$slug'
+    | '/fragrances/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  FragrancesRoute: typeof FragrancesRouteWithChildren
   JournalRoute: typeof JournalRoute
   WishlistRoute: typeof WishlistRoute
   CollectionsSlugRoute: typeof CollectionsSlugRoute
+  FragrancesSlugRoute: typeof FragrancesSlugRoute
   MaisonsSlugRoute: typeof MaisonsSlugRoute
+  FragrancesIndexRoute: typeof FragrancesIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -136,18 +137,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof JournalRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/fragrances': {
-      id: '/fragrances'
-      path: '/fragrances'
-      fullPath: '/fragrances'
-      preLoaderRoute: typeof FragrancesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/fragrances/': {
+      id: '/fragrances/'
+      path: '/fragrances'
+      fullPath: '/fragrances/'
+      preLoaderRoute: typeof FragrancesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/maisons/$slug': {
@@ -159,10 +160,10 @@ declare module '@tanstack/react-router' {
     }
     '/fragrances/$slug': {
       id: '/fragrances/$slug'
-      path: '/$slug'
+      path: '/fragrances/$slug'
       fullPath: '/fragrances/$slug'
       preLoaderRoute: typeof FragrancesSlugRouteImport
-      parentRoute: typeof FragrancesRoute
+      parentRoute: typeof rootRouteImport
     }
     '/collections/$slug': {
       id: '/collections/$slug'
@@ -174,25 +175,14 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface FragrancesRouteChildren {
-  FragrancesSlugRoute: typeof FragrancesSlugRoute
-}
-
-const FragrancesRouteChildren: FragrancesRouteChildren = {
-  FragrancesSlugRoute: FragrancesSlugRoute,
-}
-
-const FragrancesRouteWithChildren = FragrancesRoute._addFileChildren(
-  FragrancesRouteChildren,
-)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  FragrancesRoute: FragrancesRouteWithChildren,
   JournalRoute: JournalRoute,
   WishlistRoute: WishlistRoute,
   CollectionsSlugRoute: CollectionsSlugRoute,
+  FragrancesSlugRoute: FragrancesSlugRoute,
   MaisonsSlugRoute: MaisonsSlugRoute,
+  FragrancesIndexRoute: FragrancesIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

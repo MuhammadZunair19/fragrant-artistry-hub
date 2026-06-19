@@ -21,7 +21,7 @@ const SearchSchema = z.object({
   bestSellers: z.boolean().optional(),
 });
 
-export const Route = createFileRoute("/fragrances")({
+export const Route = createFileRoute("/fragrances/")({
   validateSearch: (s) => SearchSchema.parse(s ?? {}),
   loaderDeps: ({ search }) => search,
   head: () => ({
