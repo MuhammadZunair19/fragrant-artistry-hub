@@ -9,38 +9,134 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WishlistRouteImport } from './routes/wishlist'
+import { Route as JournalRouteImport } from './routes/journal'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as FragrancesIndexRouteImport } from './routes/fragrances.index'
+import { Route as MaisonsSlugRouteImport } from './routes/maisons.$slug'
+import { Route as FragrancesSlugRouteImport } from './routes/fragrances.$slug'
+import { Route as CollectionsSlugRouteImport } from './routes/collections.$slug'
 
+const WishlistRoute = WishlistRouteImport.update({
+  id: '/wishlist',
+  path: '/wishlist',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const JournalRoute = JournalRouteImport.update({
+  id: '/journal',
+  path: '/journal',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FragrancesIndexRoute = FragrancesIndexRouteImport.update({
+  id: '/fragrances/',
+  path: '/fragrances/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MaisonsSlugRoute = MaisonsSlugRouteImport.update({
+  id: '/maisons/$slug',
+  path: '/maisons/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FragrancesSlugRoute = FragrancesSlugRouteImport.update({
+  id: '/fragrances/$slug',
+  path: '/fragrances/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CollectionsSlugRoute = CollectionsSlugRouteImport.update({
+  id: '/collections/$slug',
+  path: '/collections/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/journal': typeof JournalRoute
+  '/wishlist': typeof WishlistRoute
+  '/collections/$slug': typeof CollectionsSlugRoute
+  '/fragrances/$slug': typeof FragrancesSlugRoute
+  '/maisons/$slug': typeof MaisonsSlugRoute
+  '/fragrances/': typeof FragrancesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/journal': typeof JournalRoute
+  '/wishlist': typeof WishlistRoute
+  '/collections/$slug': typeof CollectionsSlugRoute
+  '/fragrances/$slug': typeof FragrancesSlugRoute
+  '/maisons/$slug': typeof MaisonsSlugRoute
+  '/fragrances': typeof FragrancesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/journal': typeof JournalRoute
+  '/wishlist': typeof WishlistRoute
+  '/collections/$slug': typeof CollectionsSlugRoute
+  '/fragrances/$slug': typeof FragrancesSlugRoute
+  '/maisons/$slug': typeof MaisonsSlugRoute
+  '/fragrances/': typeof FragrancesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/journal'
+    | '/wishlist'
+    | '/collections/$slug'
+    | '/fragrances/$slug'
+    | '/maisons/$slug'
+    | '/fragrances/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/journal'
+    | '/wishlist'
+    | '/collections/$slug'
+    | '/fragrances/$slug'
+    | '/maisons/$slug'
+    | '/fragrances'
+  id:
+    | '__root__'
+    | '/'
+    | '/journal'
+    | '/wishlist'
+    | '/collections/$slug'
+    | '/fragrances/$slug'
+    | '/maisons/$slug'
+    | '/fragrances/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  JournalRoute: typeof JournalRoute
+  WishlistRoute: typeof WishlistRoute
+  CollectionsSlugRoute: typeof CollectionsSlugRoute
+  FragrancesSlugRoute: typeof FragrancesSlugRoute
+  MaisonsSlugRoute: typeof MaisonsSlugRoute
+  FragrancesIndexRoute: typeof FragrancesIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/wishlist': {
+      id: '/wishlist'
+      path: '/wishlist'
+      fullPath: '/wishlist'
+      preLoaderRoute: typeof WishlistRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/journal': {
+      id: '/journal'
+      path: '/journal'
+      fullPath: '/journal'
+      preLoaderRoute: typeof JournalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,22 +144,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/fragrances/': {
+      id: '/fragrances/'
+      path: '/fragrances'
+      fullPath: '/fragrances/'
+      preLoaderRoute: typeof FragrancesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/maisons/$slug': {
+      id: '/maisons/$slug'
+      path: '/maisons/$slug'
+      fullPath: '/maisons/$slug'
+      preLoaderRoute: typeof MaisonsSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/fragrances/$slug': {
+      id: '/fragrances/$slug'
+      path: '/fragrances/$slug'
+      fullPath: '/fragrances/$slug'
+      preLoaderRoute: typeof FragrancesSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/collections/$slug': {
+      id: '/collections/$slug'
+      path: '/collections/$slug'
+      fullPath: '/collections/$slug'
+      preLoaderRoute: typeof CollectionsSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  JournalRoute: JournalRoute,
+  WishlistRoute: WishlistRoute,
+  CollectionsSlugRoute: CollectionsSlugRoute,
+  FragrancesSlugRoute: FragrancesSlugRoute,
+  MaisonsSlugRoute: MaisonsSlugRoute,
+  FragrancesIndexRoute: FragrancesIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
