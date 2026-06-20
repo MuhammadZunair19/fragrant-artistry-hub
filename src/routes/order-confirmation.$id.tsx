@@ -1,9 +1,10 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound, redirect } from "@tanstack/react-router";
 import { CheckCircle2, RotateCcw } from "lucide-react";
 import { getOrder, orderItemsToCartLines } from "@/lib/account.functions";
 import { useCart } from "@/components/cart/cart-context";
 import { formatPrice } from "@/lib/format";
 import { SITE } from "@/lib/site";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/order-confirmation/$id")({
   head: ({ loaderData }) => ({
@@ -12,6 +13,15 @@ export const Route = createFileRoute("/order-confirmation/$id")({
       { name: "description", content: "Your VÉNÉRÉ order confirmation." },
     ],
   }),
+  beforeLoad: async ({ location }) => {
+    const { data } = await supabase.auth.getSession();
+    if (!data.session) {
+      throw redirect({
+        to: "/auth",
+        search: { redirect: location.href },
+      });
+    }
+  },
   loader: async ({ params }) => {
     const order = await getOrder({ data: { id: params.id } });
     if (!order) throw notFound();

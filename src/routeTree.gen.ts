@@ -10,21 +10,47 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WishlistRouteImport } from './routes/wishlist'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as JournalRouteImport } from './routes/journal'
+import { Route as CheckoutRouteImport } from './routes/checkout'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as FragrancesIndexRouteImport } from './routes/fragrances.index'
+import { Route as OrderConfirmationIdRouteImport } from './routes/order-confirmation.$id'
 import { Route as MaisonsSlugRouteImport } from './routes/maisons.$slug'
 import { Route as FragrancesSlugRouteImport } from './routes/fragrances.$slug'
 import { Route as CollectionsSlugRouteImport } from './routes/collections.$slug'
+import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
+import { Route as AuthenticatedAccountIndexRouteImport } from './routes/_authenticated.account.index'
 
 const WishlistRoute = WishlistRouteImport.update({
   id: '/wishlist',
   path: '/wishlist',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const JournalRoute = JournalRouteImport.update({
   id: '/journal',
   path: '/journal',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CheckoutRoute = CheckoutRouteImport.update({
+  id: '/checkout',
+  path: '/checkout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRoute = AuthenticatedRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -35,6 +61,11 @@ const IndexRoute = IndexRouteImport.update({
 const FragrancesIndexRoute = FragrancesIndexRouteImport.update({
   id: '/fragrances/',
   path: '/fragrances/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OrderConfirmationIdRoute = OrderConfirmationIdRouteImport.update({
+  id: '/order-confirmation/$id',
+  path: '/order-confirmation/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MaisonsSlugRoute = MaisonsSlugRouteImport.update({
@@ -52,72 +83,126 @@ const CollectionsSlugRoute = CollectionsSlugRouteImport.update({
   path: '/collections/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
+  id: '/callback',
+  path: '/callback',
+  getParentRoute: () => AuthRoute,
+} as any)
+const AuthenticatedAccountIndexRoute =
+  AuthenticatedAccountIndexRouteImport.update({
+    id: '/account/',
+    path: '/account/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRouteWithChildren
+  '/checkout': typeof CheckoutRoute
   '/journal': typeof JournalRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/wishlist': typeof WishlistRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/collections/$slug': typeof CollectionsSlugRoute
   '/fragrances/$slug': typeof FragrancesSlugRoute
   '/maisons/$slug': typeof MaisonsSlugRoute
+  '/order-confirmation/$id': typeof OrderConfirmationIdRoute
   '/fragrances/': typeof FragrancesIndexRoute
+  '/account/': typeof AuthenticatedAccountIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRouteWithChildren
+  '/checkout': typeof CheckoutRoute
   '/journal': typeof JournalRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/wishlist': typeof WishlistRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/collections/$slug': typeof CollectionsSlugRoute
   '/fragrances/$slug': typeof FragrancesSlugRoute
   '/maisons/$slug': typeof MaisonsSlugRoute
+  '/order-confirmation/$id': typeof OrderConfirmationIdRoute
   '/fragrances': typeof FragrancesIndexRoute
+  '/account': typeof AuthenticatedAccountIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/auth': typeof AuthRouteWithChildren
+  '/checkout': typeof CheckoutRoute
   '/journal': typeof JournalRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/wishlist': typeof WishlistRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/collections/$slug': typeof CollectionsSlugRoute
   '/fragrances/$slug': typeof FragrancesSlugRoute
   '/maisons/$slug': typeof MaisonsSlugRoute
+  '/order-confirmation/$id': typeof OrderConfirmationIdRoute
   '/fragrances/': typeof FragrancesIndexRoute
+  '/_authenticated/account/': typeof AuthenticatedAccountIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/auth'
+    | '/checkout'
     | '/journal'
+    | '/reset-password'
     | '/wishlist'
+    | '/auth/callback'
     | '/collections/$slug'
     | '/fragrances/$slug'
     | '/maisons/$slug'
+    | '/order-confirmation/$id'
     | '/fragrances/'
+    | '/account/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/auth'
+    | '/checkout'
     | '/journal'
+    | '/reset-password'
     | '/wishlist'
+    | '/auth/callback'
     | '/collections/$slug'
     | '/fragrances/$slug'
     | '/maisons/$slug'
+    | '/order-confirmation/$id'
     | '/fragrances'
+    | '/account'
   id:
     | '__root__'
     | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/checkout'
     | '/journal'
+    | '/reset-password'
     | '/wishlist'
+    | '/auth/callback'
     | '/collections/$slug'
     | '/fragrances/$slug'
     | '/maisons/$slug'
+    | '/order-confirmation/$id'
     | '/fragrances/'
+    | '/_authenticated/account/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  AuthRoute: typeof AuthRouteWithChildren
+  CheckoutRoute: typeof CheckoutRoute
   JournalRoute: typeof JournalRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   WishlistRoute: typeof WishlistRoute
   CollectionsSlugRoute: typeof CollectionsSlugRoute
   FragrancesSlugRoute: typeof FragrancesSlugRoute
   MaisonsSlugRoute: typeof MaisonsSlugRoute
+  OrderConfirmationIdRoute: typeof OrderConfirmationIdRoute
   FragrancesIndexRoute: typeof FragrancesIndexRoute
 }
 
@@ -130,11 +215,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WishlistRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/journal': {
       id: '/journal'
       path: '/journal'
       fullPath: '/journal'
       preLoaderRoute: typeof JournalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/checkout': {
+      id: '/checkout'
+      path: '/checkout'
+      fullPath: '/checkout'
+      preLoaderRoute: typeof CheckoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -149,6 +262,13 @@ declare module '@tanstack/react-router' {
       path: '/fragrances'
       fullPath: '/fragrances/'
       preLoaderRoute: typeof FragrancesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/order-confirmation/$id': {
+      id: '/order-confirmation/$id'
+      path: '/order-confirmation/$id'
+      fullPath: '/order-confirmation/$id'
+      preLoaderRoute: typeof OrderConfirmationIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/maisons/$slug': {
@@ -172,18 +292,69 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CollectionsSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth/callback': {
+      id: '/auth/callback'
+      path: '/callback'
+      fullPath: '/auth/callback'
+      preLoaderRoute: typeof AuthCallbackRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/_authenticated/account/': {
+      id: '/_authenticated/account/'
+      path: '/account'
+      fullPath: '/account/'
+      preLoaderRoute: typeof AuthenticatedAccountIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
   }
 }
 
+interface AuthenticatedRouteChildren {
+  AuthenticatedAccountIndexRoute: typeof AuthenticatedAccountIndexRoute
+}
+
+const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedAccountIndexRoute: AuthenticatedAccountIndexRoute,
+}
+
+const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
+  AuthenticatedRouteChildren,
+)
+
+interface AuthRouteChildren {
+  AuthCallbackRoute: typeof AuthCallbackRoute
+}
+
+const AuthRouteChildren: AuthRouteChildren = {
+  AuthCallbackRoute: AuthCallbackRoute,
+}
+
+const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  AuthRoute: AuthRouteWithChildren,
+  CheckoutRoute: CheckoutRoute,
   JournalRoute: JournalRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   WishlistRoute: WishlistRoute,
   CollectionsSlugRoute: CollectionsSlugRoute,
   FragrancesSlugRoute: FragrancesSlugRoute,
   MaisonsSlugRoute: MaisonsSlugRoute,
+  OrderConfirmationIdRoute: OrderConfirmationIdRoute,
   FragrancesIndexRoute: FragrancesIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

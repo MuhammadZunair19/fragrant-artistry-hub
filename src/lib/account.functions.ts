@@ -181,13 +181,20 @@ export const upsertAddress = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => AddressInput.parse(input))
   .handler(async ({ context, data }) => {
     const payload = { ...data, user_id: context.userId };
-    const { error } = data.id
+    const result = data.id
       ? await context.supabase
           .from("addresses")
           .update(payload)
           .eq("id", data.id)
           .eq("user_id", context.userId)
-      : await context.supabase.from("addresses").insert(payload);
+          .select("id")
+          .single()
+      : await context.supabase
+          .from("addresses")
+          .insert(payload)
+          .select("id")
+          .single();
+    const { data: saved, error } = result;
     if (error) throw new Error(error.message);
 
     if (data.is_default) {
@@ -195,7 +202,7 @@ export const upsertAddress = createServerFn({ method: "POST" })
         .from("addresses")
         .update({ is_default: false })
         .eq("user_id", context.userId)
-        .neq("id", data.id ?? "00000000-0000-0000-0000-000000000000");
+        .neq("id", saved.id);
       if (resetError) throw new Error(resetError.message);
     }
 
@@ -230,8 +237,43 @@ export const createOrder = createServerFn({ method: "POST" })
       .in("id", variantIds);
     if (variantError) throw new Error(variantError.message);
 
+    type CheckoutVariant = {
+      id: string;
+      price: number | string;
+      discount_price: number | string | null;
+      stock: number;
+      volume_ml: number;
+      product:
+        | {
+            id: string;
+            name: string;
+            slug: string;
+            brand: { name: string } | { name: string }[] | null;
+            product_images: Array<{
+              url: string;
+              sort_order: number;
+              is_primary: boolean;
+            }>;
+          }
+        | Array<{
+            id: string;
+            name: string;
+            slug: string;
+            brand: { name: string } | { name: string }[] | null;
+            product_images: Array<{
+              url: string;
+              sort_order: number;
+              is_primary: boolean;
+            }>;
+          }>
+        | null;
+    };
+
     const variantMap = new Map(
-      (variants ?? []).map((variant) => [variant.id, variant]),
+      ((variants ?? []) as unknown as CheckoutVariant[]).map((variant) => [
+        variant.id,
+        variant,
+      ]),
     );
 
     const items = data.lines.map((line) => {
@@ -243,6 +285,9 @@ export const createOrder = createServerFn({ method: "POST" })
       const product = Array.isArray(variant.product)
         ? variant.product[0]
         : variant.product;
+      const brand = Array.isArray(product?.brand)
+        ? product?.brand[0]
+        : product?.brand;
       const images = product?.product_images ?? [];
       const primary = [...images].sort(
         (a, b) =>
@@ -255,7 +300,7 @@ export const createOrder = createServerFn({ method: "POST" })
         variant_id: variant.id,
         name_snapshot: product?.name ?? line.productName,
         volume_snapshot: variant.volume_ml,
-        brand_snapshot: product?.brand?.name ?? line.brandName,
+        brand_snapshot: brand?.name ?? line.brandName,
         image_snapshot: primary?.url ?? line.image,
         price_snapshot: unitPrice,
         qty: line.qty,

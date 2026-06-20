@@ -5,6 +5,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { SITE } from "@/lib/site";
 
 export const Route = createFileRoute("/auth")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    redirect:
+      typeof search.redirect === "string" && search.redirect.startsWith("/")
+        ? search.redirect
+        : "/account",
+  }),
   head: () => ({
     meta: [
       { title: `Sign in - ${SITE.brand}` },
@@ -19,6 +25,7 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const navigate = useNavigate();
+  const { redirect } = Route.useSearch();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -54,7 +61,9 @@ function AuthPage() {
     setBusy(true);
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${window.location.origin}/account` },
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback?redirect=${encodeURIComponent(redirect)}`,
+      },
     });
     setBusy(false);
     if (error) setStatus(error.message);

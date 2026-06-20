@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "motion/react";
 import { Check, CreditCard, MapPin, ReceiptText } from "lucide-react";
-import { useMemo, useState, type FormEvent } from "react";
+import { useMemo, useState, type FormEvent, type ReactNode } from "react";
 import { createOrder } from "@/lib/account.functions";
 import { useCart } from "@/components/cart/cart-context";
 import { formatPrice } from "@/lib/format";
@@ -110,7 +110,7 @@ function CheckoutPage() {
     const { data } = await supabase.auth.getSession();
     if (!data.session) {
       setBusy(false);
-      await navigate({ to: "/auth", search: { redirect: "/checkout" } as never });
+      await navigate({ to: "/auth", search: { redirect: "/checkout" } });
       return;
     }
     const { data: userData } = await supabase.auth.getUser();
@@ -281,7 +281,7 @@ function StepPanel({
   children,
 }: {
   title: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <motion.div
