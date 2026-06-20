@@ -1,8 +1,9 @@
 -- Milestone setup: final grants, storage, coupons, and storefront seed data.
 
--- Keep has_role callable only where RLS/admin flows need it.
-REVOKE EXECUTE ON FUNCTION public.has_role(uuid, public.app_role) FROM PUBLIC, anon;
-GRANT EXECUTE ON FUNCTION public.has_role(uuid, public.app_role) TO authenticated, service_role;
+-- Keep has_role callable for authenticated admin flows and anon public reads that
+-- reference has_role() in RLS policy expressions.
+REVOKE EXECUTE ON FUNCTION public.has_role(uuid, public.app_role) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.has_role(uuid, public.app_role) TO anon, authenticated, service_role;
 
 -- Supabase Storage bucket for future admin product image uploads.
 INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)

@@ -114,7 +114,7 @@ const ListInput = z.object({
 });
 
 export const listProducts = createServerFn({ method: "GET" })
-  .inputValidator((input: unknown) => ListInput.parse(input ?? {}))
+  .validator((input: unknown) => ListInput.parse(input ?? {}))
   .handler(async ({ data }): Promise<ProductSummary[]> => {
     const sb = getPublicClient();
     let q = sb.from("products").select(PRODUCT_SELECT).eq("is_active", true);
@@ -170,7 +170,7 @@ export const listProducts = createServerFn({ method: "GET" })
 
 // ---------- getProductBySlug ----------
 export const getProductBySlug = createServerFn({ method: "GET" })
-  .inputValidator((input: unknown) =>
+  .validator((input: unknown) =>
     z.object({ slug: z.string().min(1) }).parse(input),
   )
   .handler(async ({ data }): Promise<ProductDetail | null> => {
@@ -239,7 +239,7 @@ export const listBrands = createServerFn({ method: "GET" }).handler(
 );
 
 export const getBrandBySlug = createServerFn({ method: "GET" })
-  .inputValidator((input: unknown) =>
+  .validator((input: unknown) =>
     z.object({ slug: z.string() }).parse(input),
   )
   .handler(async ({ data }): Promise<Brand | null> => {
@@ -266,7 +266,7 @@ export const listCollections = createServerFn({ method: "GET" }).handler(
 );
 
 export const getCollectionBySlug = createServerFn({ method: "GET" })
-  .inputValidator((input: unknown) =>
+  .validator((input: unknown) =>
     z.object({ slug: z.string() }).parse(input),
   )
   .handler(async ({ data }): Promise<Collection | null> => {

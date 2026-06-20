@@ -1,6 +1,6 @@
 # Supabase Setup
 
-Project id: `kfuutpyzihqhsokxotbg`
+Project id: `nlutpkgfuvzyfatfsbkr`
 
 ## Apply Migrations
 
@@ -8,7 +8,7 @@ Run the migrations in Supabase, or push them with the Supabase CLI from this rep
 
 ```powershell
 npx supabase login
-npx supabase link --project-ref kfuutpyzihqhsokxotbg
+npx supabase link --project-ref nlutpkgfuvzyfatfsbkr
 npx supabase db push
 ```
 
@@ -18,7 +18,7 @@ For non-interactive shells, use an access token instead of `supabase login`:
 
 ```powershell
 $env:SUPABASE_ACCESS_TOKEN="sbp_..."
-npx supabase link --project-ref kfuutpyzihqhsokxotbg
+npx supabase link --project-ref nlutpkgfuvzyfatfsbkr
 npx supabase db push
 ```
 
@@ -27,9 +27,9 @@ npx supabase db push
 Client and server:
 
 ```text
-VITE_SUPABASE_URL=https://kfuutpyzihqhsokxotbg.supabase.co
+VITE_SUPABASE_URL=https://nlutpkgfuvzyfatfsbkr.supabase.co
 VITE_SUPABASE_PUBLISHABLE_KEY=...
-SUPABASE_URL=https://kfuutpyzihqhsokxotbg.supabase.co
+SUPABASE_URL=https://nlutpkgfuvzyfatfsbkr.supabase.co
 SUPABASE_PUBLISHABLE_KEY=...
 ```
 
@@ -45,9 +45,9 @@ Never expose `SUPABASE_SERVICE_ROLE_KEY` in client-side env.
 
 In Supabase Dashboard -> Authentication -> URL Configuration:
 
-- Site URL, local: `http://localhost:5173`
-- Redirect URL, local: `http://localhost:5173/auth/callback`
-- Redirect URL, reset password local: `http://localhost:5173/reset-password`
+- Site URL, local: `http://localhost:8080`
+- Redirect URL, local: `http://localhost:8080/auth/callback`
+- Redirect URL, reset password local: `http://localhost:8080/reset-password`
 - Add the same paths for the Lovable/published domain:
   - `https://YOUR_DOMAIN/auth/callback`
   - `https://YOUR_DOMAIN/reset-password`
@@ -62,8 +62,8 @@ In Supabase Dashboard -> Authentication -> Providers -> Google:
 
 In Google Cloud Console -> APIs & Services -> Credentials -> OAuth client:
 
-- Authorized JavaScript origin: `https://kfuutpyzihqhsokxotbg.supabase.co`
-- Authorized redirect URI: `https://kfuutpyzihqhsokxotbg.supabase.co/auth/v1/callback`
+- Authorized JavaScript origin: `https://nlutpkgfuvzyfatfsbkr.supabase.co`
+- Authorized redirect URI: `https://nlutpkgfuvzyfatfsbkr.supabase.co/auth/v1/callback`
 
 The app redirects users to `/auth/callback`; Supabase/Google still use the Supabase `/auth/v1/callback` endpoint internally.
 

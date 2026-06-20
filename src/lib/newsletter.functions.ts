@@ -13,7 +13,7 @@ const EmailSchema = z.object({
 });
 
 export const subscribeNewsletter = createServerFn({ method: "POST" })
-  .inputValidator((input: unknown) => EmailSchema.parse(input))
+  .validator((input: unknown) => EmailSchema.parse(input))
   .handler(async ({ data }): Promise<{ ok: boolean; error?: string }> => {
     const url =
       process.env.SUPABASE_URL ?? import.meta.env.VITE_SUPABASE_URL;

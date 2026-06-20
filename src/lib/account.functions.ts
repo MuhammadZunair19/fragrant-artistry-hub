@@ -167,7 +167,7 @@ export const getAccountSnapshot = createServerFn({ method: "GET" })
 
 export const updateProfile = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => ProfileInput.parse(input))
+  .validator((input: unknown) => ProfileInput.parse(input))
   .handler(async ({ context, data }) => {
     const { error } = await context.supabase
       .from("profiles")
@@ -178,7 +178,7 @@ export const updateProfile = createServerFn({ method: "POST" })
 
 export const upsertAddress = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => AddressInput.parse(input))
+  .validator((input: unknown) => AddressInput.parse(input))
   .handler(async ({ context, data }) => {
     const payload = { ...data, user_id: context.userId };
     const result = data.id
@@ -211,7 +211,7 @@ export const upsertAddress = createServerFn({ method: "POST" })
 
 export const deleteAddress = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) =>
+  .validator((input: unknown) =>
     z.object({ id: z.string().uuid() }).parse(input),
   )
   .handler(async ({ context, data }) => {
@@ -226,7 +226,7 @@ export const deleteAddress = createServerFn({ method: "POST" })
 
 export const createOrder = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => CreateOrderInput.parse(input))
+  .validator((input: unknown) => CreateOrderInput.parse(input))
   .handler(async ({ context, data }) => {
     const variantIds = data.lines.map((line) => line.variantId);
     const { data: variants, error: variantError } = await context.supabase
@@ -426,7 +426,7 @@ export const listMyOrders = createServerFn({ method: "GET" })
 
 export const getOrder = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) =>
+  .validator((input: unknown) =>
     z.object({ id: z.string().uuid() }).parse(input),
   )
   .handler(async ({ context, data }): Promise<OrderSummary | null> => {
