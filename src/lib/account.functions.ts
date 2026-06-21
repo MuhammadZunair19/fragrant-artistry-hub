@@ -393,7 +393,8 @@ function normalizeOrder(row: Record<string, unknown>): OrderSummary {
         variant_id: (item.variant_id as string | null) ?? null,
         name_snapshot: item.name_snapshot as string,
         brand_snapshot: (item.brand_snapshot as string | null) ?? null,
-        volume_snapshot: (item.volume_snapshot as number | null) ?? null,
+        volume_snapshot:
+          item.volume_snapshot == null ? null : Number(item.volume_snapshot),
         image_snapshot: (item.image_snapshot as string | null) ?? null,
         price_snapshot: Number(item.price_snapshot),
         qty: Number(item.qty),

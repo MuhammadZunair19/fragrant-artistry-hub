@@ -283,11 +283,12 @@ export const listAdminProducts = createServerFn({ method: "GET" })
       const images = [...(p.product_images ?? [])].sort(
         (a, b) => Number(b.is_primary) - Number(a.is_primary) || a.sort_order - b.sort_order,
       );
+      const brand = Array.isArray(p.brand) ? p.brand[0] : p.brand;
       return {
         id: p.id,
         slug: p.slug,
         name: p.name,
-        brand_name: p.brand?.name ?? null,
+        brand_name: brand?.name ?? null,
         is_active: p.is_active,
         is_featured: p.is_featured,
         total_stock: variants.reduce((s, v) => s + v.stock, 0),
@@ -732,11 +733,13 @@ export const getAdminOrder = createServerFn({ method: "GET" })
     if (error) throw new Error(error.message);
     if (!order) return null;
 
-    const { data: profile } = await context.supabase
-      .from("profiles")
-      .select("full_name, phone")
-      .eq("id", order.user_id)
-      .maybeSingle();
+    const { data: profile } = order.user_id
+      ? await context.supabase
+          .from("profiles")
+          .select("full_name, phone")
+          .eq("id", order.user_id)
+          .maybeSingle()
+      : { data: null };
 
     return {
       ...order,
@@ -799,6 +802,7 @@ export const listAdminCustomers = createServerFn({ method: "GET" })
 
     const stats = new Map<string, { orders: number; spent: number }>();
     for (const order of orderCounts ?? []) {
+      if (!order.user_id) continue;
       const bucket = stats.get(order.user_id) ?? { orders: 0, spent: 0 };
       bucket.orders += 1;
       bucket.spent += num(order.total);
