@@ -11,6 +11,7 @@ import {
   type Address,
   type OrderSummary,
 } from "@/lib/account.functions";
+import { checkAdminAccess } from "@/lib/admin.functions";
 import { listProducts } from "@/lib/products.functions";
 import { ProductCard } from "@/components/products/product-card";
 import { useCart } from "@/components/cart/cart-context";
@@ -26,12 +27,13 @@ export const Route = createFileRoute("/_authenticated/account/")({
     ],
   }),
   loader: async () => {
-    const [snapshot, orders, products] = await Promise.all([
+    const [snapshot, orders, products, adminCheck] = await Promise.all([
       getAccountSnapshot(),
       listMyOrders(),
       listProducts({ data: { limit: 60 } }),
+      checkAdminAccess().then(() => true).catch(() => false),
     ]);
-    return { snapshot, orders, products };
+    return { snapshot, orders, products, isAdmin: adminCheck };
   },
   component: AccountPage,
 });
@@ -51,7 +53,7 @@ const blankAddress = {
 
 function AccountPage() {
   const router = useRouter();
-  const { snapshot, orders, products } = Route.useLoaderData();
+  const { snapshot, orders, products, isAdmin } = Route.useLoaderData();
   const { wishlist, toggleWishlist, addLine } = useCart();
   const [profile, setProfile] = useState({
     full_name: snapshot.profile.full_name ?? "",
@@ -124,9 +126,19 @@ function AccountPage() {
               {snapshot.profile.email}
             </p>
           </div>
-          <button onClick={signOut} className="eyebrow border-b border-foreground pb-1 hover:text-accent">
-            Sign Out
-          </button>
+          <div className="flex flex-wrap items-center gap-4">
+            {isAdmin && (
+              <Link
+                to="/admin"
+                className="eyebrow border-b border-accent pb-1 text-accent hover:text-foreground"
+              >
+                Admin panel
+              </Link>
+            )}
+            <button onClick={signOut} className="eyebrow border-b border-foreground pb-1 hover:text-accent">
+              Sign Out
+            </button>
+          </div>
         </div>
 
         {status && <p className="mt-8 text-sm text-accent">{status}</p>}
