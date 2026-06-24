@@ -99,13 +99,11 @@ function money(value: number) {
 }
 
 function discountForCoupon(
-  coupon:
-    | {
-        type: "percent" | "fixed";
-        value: number | string;
-        min_order: number | string;
-      }
-    | null,
+  coupon: {
+    type: "percent" | "fixed";
+    value: number | string;
+    min_order: number | string;
+  } | null,
   subtotal: number,
 ) {
   if (!coupon) return 0;
@@ -124,11 +122,7 @@ export const getAccountSnapshot = createServerFn({ method: "GET" })
 
     const [{ data: profile, error: profileError }, { data: addresses, error: addressError }] =
       await Promise.all([
-        supabase
-          .from("profiles")
-          .select("id, full_name, phone")
-          .eq("id", userId)
-          .maybeSingle(),
+        supabase.from("profiles").select("id, full_name, phone").eq("id", userId).maybeSingle(),
         supabase
           .from("addresses")
           .select("*")
@@ -189,11 +183,7 @@ export const upsertAddress = createServerFn({ method: "POST" })
           .eq("user_id", context.userId)
           .select("id")
           .single()
-      : await context.supabase
-          .from("addresses")
-          .insert(payload)
-          .select("id")
-          .single();
+      : await context.supabase.from("addresses").insert(payload).select("id").single();
     const { data: saved, error } = result;
     if (error) throw new Error(error.message);
 
@@ -211,9 +201,7 @@ export const upsertAddress = createServerFn({ method: "POST" })
 
 export const deleteAddress = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((input: unknown) =>
-    z.object({ id: z.string().uuid() }).parse(input),
-  )
+  .validator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ context, data }) => {
     const { error } = await context.supabase
       .from("addresses")
@@ -270,10 +258,7 @@ export const createOrder = createServerFn({ method: "POST" })
     };
 
     const variantMap = new Map(
-      ((variants ?? []) as unknown as CheckoutVariant[]).map((variant) => [
-        variant.id,
-        variant,
-      ]),
+      ((variants ?? []) as unknown as CheckoutVariant[]).map((variant) => [variant.id, variant]),
     );
 
     const items = data.lines.map((line) => {
@@ -282,17 +267,11 @@ export const createOrder = createServerFn({ method: "POST" })
       if (variant.stock < line.qty) {
         throw new Error(`${line.productName} has only ${variant.stock} left.`);
       }
-      const product = Array.isArray(variant.product)
-        ? variant.product[0]
-        : variant.product;
-      const brand = Array.isArray(product?.brand)
-        ? product?.brand[0]
-        : product?.brand;
+      const product = Array.isArray(variant.product) ? variant.product[0] : variant.product;
+      const brand = Array.isArray(product?.brand) ? product?.brand[0] : product?.brand;
       const images = product?.product_images ?? [];
       const primary = [...images].sort(
-        (a, b) =>
-          Number(b.is_primary) - Number(a.is_primary) ||
-          a.sort_order - b.sort_order,
+        (a, b) => Number(b.is_primary) - Number(a.is_primary) || a.sort_order - b.sort_order,
       )[0];
       const unitPrice = Number(variant.discount_price ?? variant.price);
       return {
@@ -311,22 +290,30 @@ export const createOrder = createServerFn({ method: "POST" })
       items.reduce((sum, item) => sum + Number(item.price_snapshot) * item.qty, 0),
     );
 
-    let coupon:
-      | {
-          code: string;
-          type: "percent" | "fixed";
-          value: number | string;
-          min_order: number | string;
-        }
-      | null = null;
+    let coupon: {
+      id: string;
+      code: string;
+      type: "percent" | "fixed";
+      value: number | string;
+      min_order: number | string;
+      expires_at: string | null;
+      usage_limit: number | null;
+      used_count: number;
+    } | null = null;
     if (data.couponCode) {
       const { data: row } = await context.supabase
         .from("coupons")
-        .select("code, type, value, min_order")
+        .select("id, code, type, value, min_order, expires_at, usage_limit, used_count")
         .eq("code", data.couponCode.trim().toUpperCase())
         .eq("is_active", true)
         .maybeSingle();
       coupon = row;
+      if (coupon?.expires_at && new Date(coupon.expires_at).getTime() <= Date.now()) {
+        throw new Error("This coupon is expired");
+      }
+      if (coupon?.usage_limit != null && Number(coupon.used_count) >= coupon.usage_limit) {
+        throw new Error("This coupon has reached its usage limit");
+      }
     }
 
     const discount = discountForCoupon(coupon, subtotal);
@@ -372,6 +359,15 @@ export const createOrder = createServerFn({ method: "POST" })
       }),
     );
 
+    if (coupon) {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { error: couponError } = await supabaseAdmin
+        .from("coupons")
+        .update({ used_count: Number(coupon.used_count) + 1 })
+        .eq("id", coupon.id);
+      if (couponError) throw new Error(couponError.message);
+    }
+
     return { id: order.id, order_number: order.order_number, total };
   });
 
@@ -387,26 +383,24 @@ function normalizeOrder(row: Record<string, unknown>): OrderSummary {
     total: Number(row.total),
     coupon_code: (row.coupon_code as string | null) ?? null,
     created_at: row.created_at as string,
-    items: ((row.order_items as Array<Record<string, unknown>> | null) ?? []).map(
-      (item) => ({
-        id: item.id as string,
-        variant_id: (item.variant_id as string | null) ?? null,
-        name_snapshot: item.name_snapshot as string,
-        brand_snapshot: (item.brand_snapshot as string | null) ?? null,
-        volume_snapshot: (item.volume_snapshot as number | null) ?? null,
-        image_snapshot: (item.image_snapshot as string | null) ?? null,
-        price_snapshot: Number(item.price_snapshot),
-        qty: Number(item.qty),
+    items: ((row.order_items as Array<Record<string, unknown>> | null) ?? []).map((item) => ({
+      id: item.id as string,
+      variant_id: (item.variant_id as string | null) ?? null,
+      name_snapshot: item.name_snapshot as string,
+      brand_snapshot: (item.brand_snapshot as string | null) ?? null,
+      volume_snapshot: item.volume_snapshot == null ? null : Number(item.volume_snapshot),
+      image_snapshot: (item.image_snapshot as string | null) ?? null,
+      price_snapshot: Number(item.price_snapshot),
+      qty: Number(item.qty),
+    })),
+    history: ((row.order_status_history as Array<Record<string, unknown>> | null) ?? []).map(
+      (event) => ({
+        id: event.id as string,
+        status: event.status as OrderStatus,
+        note: (event.note as string | null) ?? null,
+        created_at: event.created_at as string,
       }),
     ),
-    history: (
-      (row.order_status_history as Array<Record<string, unknown>> | null) ?? []
-    ).map((event) => ({
-      id: event.id as string,
-      status: event.status as OrderStatus,
-      note: (event.note as string | null) ?? null,
-      created_at: event.created_at as string,
-    })),
   };
 }
 
@@ -426,9 +420,7 @@ export const listMyOrders = createServerFn({ method: "GET" })
 
 export const getOrder = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .validator((input: unknown) =>
-    z.object({ id: z.string().uuid() }).parse(input),
-  )
+  .validator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ context, data }): Promise<OrderSummary | null> => {
     const { data: row, error } = await context.supabase
       .from("orders")
