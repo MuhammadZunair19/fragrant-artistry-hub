@@ -21,6 +21,8 @@ import {
 import { formatPrice } from "@/lib/format";
 import { supabase } from "@/integrations/supabase/client";
 import { SITE } from "@/lib/site";
+import { TagInput } from "@/components/ui/tag-input";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import {
   Sheet,
   SheetContent,
@@ -61,11 +63,32 @@ const blankProduct = (): AdminProductDetail => ({
   is_active: true,
   collection_ids: [],
   variants: [
+    {
+      volume_ml: 30,
+      price: 0,
+      discount_price: null,
+      stock: 0,
+      low_stock_threshold: 5,
+      sku: "",
+      is_active: true,
+    },
     { volume_ml: 30, price: 0, discount_price: null, stock: 0, low_stock_threshold: 5, sku: "", is_active: true },
   ],
   images: [],
 });
 
+function storagePathFromUrl(url: string) {
+  const marker = "/storage/v1/object/public/product-images/";
+  const index = url.indexOf(marker);
+  if (index === -1) return null;
+  return decodeURIComponent(url.slice(index + marker.length).split("?")[0]);
+}
+
+async function removeStorageObject(url: string) {
+  const path = storagePathFromUrl(url);
+  if (!path) return;
+  const { error } = await supabase.storage.from("product-images").remove([path]);
+  if (error) throw new Error(error.message);
 function notesToString(notes: string[]) {
   return notes.join(", ");
 }
@@ -114,8 +137,53 @@ function AdminProductsPage() {
 
   async function removeProduct(id: string) {
     if (!confirm("Delete this product?")) return;
+    const detail = await getAdminProduct({ data: { id } });
+    await Promise.all((detail?.images ?? []).map((image) => removeStorageObject(image.url)));
     await deleteAdminProduct({ data: { id } });
     await router.invalidate();
+  }
+
+  async function uploadImages(files: FileList) {
+    const uploaded: AdminProductDetail["images"] = [];
+    for (const [index, file] of Array.from(files).entries()) {
+      const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, "-");
+      const path = `${form.id || "new"}/${Date.now()}-${index}-${safeName}`;
+      const { error } = await supabase.storage
+        .from("product-images")
+        .upload(path, file, { upsert: true });
+      if (error) throw new Error(error.message);
+      const { data } = supabase.storage.from("product-images").getPublicUrl(path);
+      uploaded.push({
+        url: data.publicUrl,
+        alt: file.name,
+        sort_order: form.images.length + uploaded.length,
+        is_primary: form.images.length === 0 && uploaded.length === 0,
+      });
+    }
+
+    setForm((prev) => ({
+      ...prev,
+      images: [...prev.images, ...uploaded],
+    }));
+  }
+
+  async function removeImage(index: number) {
+    const image = form.images[index];
+    if (!image) return;
+    try {
+      await removeStorageObject(image.url);
+      setForm((prev) => {
+        const images = prev.images
+          .filter((_, imageIndex) => imageIndex !== index)
+          .map((item, imageIndex) => ({ ...item, sort_order: imageIndex }));
+        if (images.length && !images.some((item) => item.is_primary)) {
+          images[0] = { ...images[0], is_primary: true };
+        }
+        return { ...prev, images };
+      });
+    } catch (err) {
+      setStatus(err instanceof Error ? err.message : "Image removal failed");
+    }
   }
 
   async function uploadImage(file: File) {
@@ -152,6 +220,7 @@ function AdminProductsPage() {
         }
       />
 
+      <AdminTable headers={["Product", "Brand", "Price", "Stock", "Status", ""]}>
       <AdminTable
         headers={["Product", "Brand", "Price", "Stock", "Status", ""]}
       >
@@ -160,6 +229,7 @@ function AdminProductsPage() {
             <td className="px-4 py-3">
               <div className="flex items-center gap-3">
                 {product.image_url && (
+                  <img src={product.image_url} alt="" className="size-10 object-cover" />
                   <img
                     src={product.image_url}
                     alt=""
@@ -176,6 +246,7 @@ function AdminProductsPage() {
             <td className="px-4 py-3">{formatPrice(product.min_price)}</td>
             <td className="px-4 py-3">{product.total_stock}</td>
             <td className="px-4 py-3">
+              <span className="eyebrow text-accent">{product.is_active ? "Active" : "Hidden"}</span>
               <span className="eyebrow text-accent">
                 {product.is_active ? "Active" : "Hidden"}
               </span>
@@ -278,6 +349,7 @@ function AdminProductsPage() {
               <textarea
                 className={adminTextareaClass}
                 value={form.description ?? ""}
+                onChange={(e) => setForm({ ...form, description: e.target.value })}
                 onChange={(e) =>
                   setForm({ ...form, description: e.target.value })
                 }
@@ -285,6 +357,10 @@ function AdminProductsPage() {
             </AdminField>
             <div className="grid gap-4">
               {(["top_notes", "heart_notes", "base_notes"] as const).map((key) => (
+                <AdminField key={key} label={key.replace("_", " ")}>
+                  <TagInput
+                    value={form[key]}
+                    onChange={(value) => setForm({ ...form, [key]: value })}
                 <AdminField
                   key={key}
                   label={key.replace("_", " ")}
@@ -314,6 +390,7 @@ function AdminProductsPage() {
                   <input
                     type="checkbox"
                     checked={form[key]}
+                    onChange={(e) => setForm({ ...form, [key]: e.target.checked })}
                     onChange={(e) =>
                       setForm({ ...form, [key]: e.target.checked })
                     }
@@ -355,6 +432,20 @@ function AdminProductsPage() {
                         variants[index] = {
                           ...variant,
                           price: Number(e.target.value),
+                        };
+                        setForm({ ...form, variants });
+                      }}
+                    />
+                    <input
+                      className={adminInputClass}
+                      type="number"
+                      placeholder="Discount Price"
+                      value={variant.discount_price ?? ""}
+                      onChange={(e) => {
+                        const variants = [...form.variants];
+                        variants[index] = {
+                          ...variant,
+                          discount_price: e.target.value ? Number(e.target.value) : null,
                         };
                         setForm({ ...form, variants });
                       }}
@@ -425,6 +516,14 @@ function AdminProductsPage() {
                         setForm({ ...form, images });
                       }}
                     />
+                    <button
+                      type="button"
+                      className="border border-border px-3 text-muted-foreground hover:border-destructive hover:text-destructive"
+                      onClick={() => void removeImage(index)}
+                      aria-label="Remove image"
+                    >
+                      <Trash2 size={15} />
+                    </button>
                   </div>
                 ))}
               </div>
@@ -434,6 +533,14 @@ function AdminProductsPage() {
                 <input
                   type="file"
                   accept="image/*"
+                  multiple
+                  className="hidden"
+                  onChange={(e) => {
+                    const { files } = e.target;
+                    if (files?.length) {
+                      void uploadImages(files).catch((err) => setStatus(err.message));
+                    }
+                    e.target.value = "";
                   className="hidden"
                   onChange={(e) => {
                     const file = e.target.files?.[0];
@@ -451,6 +558,7 @@ function AdminProductsPage() {
                 onChange={(e) =>
                   setForm({
                     ...form,
+                    collection_ids: [...e.target.selectedOptions].map((o) => o.value),
                     collection_ids: [...e.target.selectedOptions].map(
                       (o) => o.value,
                     ),

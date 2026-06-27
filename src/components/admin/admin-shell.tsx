@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Link, Outlet, useRouterState } from "@tanstack/react-router";
 import {
   Boxes,
@@ -45,6 +46,7 @@ export function AdminShell() {
                   to={to}
                   className={cn(
                     "flex items-center gap-3 py-2.5 text-sm transition-colors",
+                    active ? "text-accent" : "text-muted-foreground hover:text-foreground",
                     active
                       ? "text-accent"
                       : "text-muted-foreground hover:text-foreground",
@@ -79,6 +81,7 @@ export function AdminHeader({
 }: {
   title: string;
   subtitle?: string;
+  action?: ReactNode;
   action?: React.ReactNode;
 }) {
   return (
@@ -86,6 +89,7 @@ export function AdminHeader({
       <div>
         <p className="eyebrow !text-accent mb-3">Administration</p>
         <h1 className="font-display italic text-4xl md:text-5xl">{title}</h1>
+        {subtitle && <p className="mt-2 max-w-2xl text-sm text-muted-foreground">{subtitle}</p>}
         {subtitle && (
           <p className="mt-2 max-w-2xl text-sm text-muted-foreground">{subtitle}</p>
         )}
@@ -104,6 +108,12 @@ export function AdminStat({
   value: string | number;
   hint?: string;
 }) {
+  const animatedValue = useAnimatedStatValue(value);
+
+  return (
+    <div className="border border-border bg-card/50 p-5">
+      <p className="eyebrow mb-3">{label}</p>
+      <p className="font-display text-4xl italic">{animatedValue}</p>
   return (
     <div className="border border-border bg-card/50 p-5">
       <p className="eyebrow mb-3">{label}</p>
@@ -113,6 +123,76 @@ export function AdminStat({
   );
 }
 
+function useAnimatedStatValue(value: string | number) {
+  const parsed = useMemo(() => parseStatValue(value), [value]);
+  const [display, setDisplay] = useState(() => formatAnimatedValue(parsed, 0));
+
+  useEffect(() => {
+    if (!parsed.canAnimate) {
+      setDisplay(String(value));
+      return;
+    }
+
+    let frame = 0;
+    const duration = 1200;
+    const start = performance.now();
+
+    function tick(now: number) {
+      const progress = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setDisplay(formatAnimatedValue(parsed, parsed.amount * eased));
+      if (progress < 1) frame = requestAnimationFrame(tick);
+    }
+
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [parsed, value]);
+
+  return display;
+}
+
+function parseStatValue(value: string | number) {
+  if (typeof value === "number") {
+    return {
+      canAnimate: true,
+      amount: value,
+      prefix: "",
+      suffix: "",
+      decimals: Number.isInteger(value) ? 0 : 2,
+    };
+  }
+
+  const match = value.match(/-?\d[\d,]*(?:\.\d+)?/);
+  if (!match) {
+    return {
+      canAnimate: false,
+      amount: 0,
+      prefix: "",
+      suffix: "",
+      decimals: 0,
+    };
+  }
+
+  const raw = match[0];
+  const decimals = raw.includes(".") ? raw.split(".")[1].length : 0;
+  return {
+    canAnimate: true,
+    amount: Number(raw.replace(/,/g, "")),
+    prefix: value.slice(0, match.index),
+    suffix: value.slice((match.index ?? 0) + raw.length),
+    decimals,
+  };
+}
+
+function formatAnimatedValue(parsed: ReturnType<typeof parseStatValue>, amount: number) {
+  if (!parsed.canAnimate) return "";
+  return `${parsed.prefix}${amount.toLocaleString(undefined, {
+    minimumFractionDigits: parsed.decimals,
+    maximumFractionDigits: parsed.decimals,
+  })}${parsed.suffix}`;
+}
+
+export function AdminTable({ headers, children }: { headers: string[]; children: ReactNode }) {
 export function AdminTable({
   headers,
   children,
@@ -162,6 +242,8 @@ export function AdminButton({
         "eyebrow px-4 py-2.5 transition-colors disabled:opacity-50",
         variant === "primary" && "bg-foreground text-background hover:bg-accent",
         variant === "ghost" && "border border-border hover:border-accent hover:text-accent",
+        variant === "danger" &&
+          "border border-destructive/40 text-destructive hover:bg-destructive/10",
         variant === "danger" && "border border-destructive/40 text-destructive hover:bg-destructive/10",
         props.className,
       )}
@@ -169,6 +251,7 @@ export function AdminButton({
   );
 }
 
+export function AdminField({ label, children }: { label: string; children: ReactNode }) {
 export function AdminField({
   label,
   children,
