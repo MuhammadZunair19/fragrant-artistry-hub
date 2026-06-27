@@ -24,7 +24,7 @@ npx supabase db push
 
 ## Required Environment Variables
 
-Client and server:
+Client and server (required for storefront, auth, and admin):
 
 ```text
 VITE_SUPABASE_URL=https://nlutpkgfuvzyfatfsbkr.supabase.co
@@ -33,13 +33,41 @@ SUPABASE_URL=https://nlutpkgfuvzyfatfsbkr.supabase.co
 SUPABASE_PUBLISHABLE_KEY=...
 ```
 
-Server-only admin functions:
+Optional server-only (not used by current admin code — admin runs on the user JWT + RLS):
 
 ```text
 SUPABASE_SERVICE_ROLE_KEY=...
 ```
 
 Never expose `SUPABASE_SERVICE_ROLE_KEY` in client-side env.
+
+## Admin Panel (Supabase)
+
+The admin backend uses **TanStack Start server functions** with:
+
+1. `attachSupabaseAuth` — sends the signed-in user's access token on every serverFn call
+2. `requireSupabaseAuth` — validates the JWT and builds a Supabase client scoped to that user
+3. `requireSupabaseAdmin` — calls `has_role(auth.uid(), 'admin')` before any admin handler runs
+
+All admin database access goes through **RLS as the admin user**, not the service role. Tables with admin write policies include products, brands, categories, collections, coupons, orders, and storage (`product-images` bucket).
+
+After migrations are applied:
+
+1. Promote your account (see **First Admin** below).
+2. Sign in and open `/admin`.
+3. Product image uploads use the browser Supabase client + storage RLS (admin insert/update/delete on `product-images`).
+
+If customer pages or dashboard customer counts fail with permission errors, ensure migration `20260620140000_admin_profiles_addresses_rls.sql` is applied. You can also run this in the SQL Editor:
+
+```sql
+CREATE POLICY "profiles admin read"
+  ON public.profiles FOR SELECT TO authenticated
+  USING (public.has_role(auth.uid(), 'admin'));
+
+CREATE POLICY "addresses admin read"
+  ON public.addresses FOR SELECT TO authenticated
+  USING (public.has_role(auth.uid(), 'admin'));
+```
 
 ## Auth URL Configuration
 

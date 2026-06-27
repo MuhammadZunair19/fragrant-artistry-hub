@@ -58,7 +58,7 @@ Brand: **VÉNÉRÉ**. Palette: near-black background `hsl(240 10% 3%)`, ivory fo
 - Reorder button (re-adds items to cart, honoring current stock).
 - Wishlist management.
 
-## Milestone 3 — Admin Dashboard(work)
+## Milestone 3 — Admin Dashboard (done)
 
 `/_authenticated/admin/*`, gated by `has_role(uid, 'admin')` in both route `beforeLoad` and every admin server function.
 

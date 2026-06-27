@@ -47,6 +47,9 @@ export function AdminShell() {
                   className={cn(
                     "flex items-center gap-3 py-2.5 text-sm transition-colors",
                     active ? "text-accent" : "text-muted-foreground hover:text-foreground",
+                    active
+                      ? "text-accent"
+                      : "text-muted-foreground hover:text-foreground",
                   )}
                 >
                   <Icon size={15} />
@@ -79,6 +82,7 @@ export function AdminHeader({
   title: string;
   subtitle?: string;
   action?: ReactNode;
+  action?: React.ReactNode;
 }) {
   return (
     <div className="mb-10 flex flex-wrap items-end justify-between gap-4 border-b border-border pb-6">
@@ -86,6 +90,9 @@ export function AdminHeader({
         <p className="eyebrow !text-accent mb-3">Administration</p>
         <h1 className="font-display italic text-4xl md:text-5xl">{title}</h1>
         {subtitle && <p className="mt-2 max-w-2xl text-sm text-muted-foreground">{subtitle}</p>}
+        {subtitle && (
+          <p className="mt-2 max-w-2xl text-sm text-muted-foreground">{subtitle}</p>
+        )}
       </div>
       {action}
     </div>
@@ -107,6 +114,10 @@ export function AdminStat({
     <div className="border border-border bg-card/50 p-5">
       <p className="eyebrow mb-3">{label}</p>
       <p className="font-display text-4xl italic">{animatedValue}</p>
+  return (
+    <div className="border border-border bg-card/50 p-5">
+      <p className="eyebrow mb-3">{label}</p>
+      <p className="font-display text-4xl italic">{value}</p>
       {hint && <p className="mt-2 text-xs text-muted-foreground">{hint}</p>}
     </div>
   );
@@ -182,6 +193,13 @@ function formatAnimatedValue(parsed: ReturnType<typeof parseStatValue>, amount: 
 }
 
 export function AdminTable({ headers, children }: { headers: string[]; children: ReactNode }) {
+export function AdminTable({
+  headers,
+  children,
+}: {
+  headers: string[];
+  children: React.ReactNode;
+}) {
   return (
     <div className="overflow-x-auto border border-border">
       <table className="w-full min-w-[640px] text-left text-sm">
@@ -226,6 +244,7 @@ export function AdminButton({
         variant === "ghost" && "border border-border hover:border-accent hover:text-accent",
         variant === "danger" &&
           "border border-destructive/40 text-destructive hover:bg-destructive/10",
+        variant === "danger" && "border border-destructive/40 text-destructive hover:bg-destructive/10",
         props.className,
       )}
     />
@@ -233,6 +252,13 @@ export function AdminButton({
 }
 
 export function AdminField({ label, children }: { label: string; children: ReactNode }) {
+export function AdminField({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
   return (
     <label className="block">
       <span className="eyebrow mb-2 block">{label}</span>

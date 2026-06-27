@@ -23,6 +23,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { SITE } from "@/lib/site";
 import { TagInput } from "@/components/ui/tag-input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 
 export const Route = createFileRoute("/_authenticated/admin/products")({
   head: () => ({
@@ -66,6 +72,7 @@ const blankProduct = (): AdminProductDetail => ({
       sku: "",
       is_active: true,
     },
+    { volume_ml: 30, price: 0, discount_price: null, stock: 0, low_stock_threshold: 5, sku: "", is_active: true },
   ],
   images: [],
 });
@@ -82,6 +89,15 @@ async function removeStorageObject(url: string) {
   if (!path) return;
   const { error } = await supabase.storage.from("product-images").remove([path]);
   if (error) throw new Error(error.message);
+function notesToString(notes: string[]) {
+  return notes.join(", ");
+}
+
+function stringToNotes(value: string) {
+  return value
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
 }
 
 function AdminProductsPage() {
@@ -170,6 +186,28 @@ function AdminProductsPage() {
     }
   }
 
+  async function uploadImage(file: File) {
+    const ext = file.name.split(".").pop() ?? "jpg";
+    const path = `${form.id || "new"}/${Date.now()}.${ext}`;
+    const { error } = await supabase.storage
+      .from("product-images")
+      .upload(path, file, { upsert: true });
+    if (error) throw new Error(error.message);
+    const { data } = supabase.storage.from("product-images").getPublicUrl(path);
+    setForm((prev) => ({
+      ...prev,
+      images: [
+        ...prev.images,
+        {
+          url: data.publicUrl,
+          alt: file.name,
+          sort_order: prev.images.length,
+          is_primary: prev.images.length === 0,
+        },
+      ],
+    }));
+  }
+
   return (
     <div>
       <AdminHeader
@@ -183,12 +221,20 @@ function AdminProductsPage() {
       />
 
       <AdminTable headers={["Product", "Brand", "Price", "Stock", "Status", ""]}>
+      <AdminTable
+        headers={["Product", "Brand", "Price", "Stock", "Status", ""]}
+      >
         {products.map((product) => (
           <tr key={product.id} className="border-b border-border/60">
             <td className="px-4 py-3">
               <div className="flex items-center gap-3">
                 {product.image_url && (
                   <img src={product.image_url} alt="" className="size-10 object-cover" />
+                  <img
+                    src={product.image_url}
+                    alt=""
+                    className="size-10 object-cover"
+                  />
                 )}
                 <div>
                   <p>{product.name}</p>
@@ -201,6 +247,9 @@ function AdminProductsPage() {
             <td className="px-4 py-3">{product.total_stock}</td>
             <td className="px-4 py-3">
               <span className="eyebrow text-accent">{product.is_active ? "Active" : "Hidden"}</span>
+              <span className="eyebrow text-accent">
+                {product.is_active ? "Active" : "Hidden"}
+              </span>
             </td>
             <td className="px-4 py-3">
               <div className="flex gap-2">
@@ -301,6 +350,9 @@ function AdminProductsPage() {
                 className={adminTextareaClass}
                 value={form.description ?? ""}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, description: e.target.value })
+                }
               />
             </AdminField>
             <div className="grid gap-4">
@@ -309,6 +361,16 @@ function AdminProductsPage() {
                   <TagInput
                     value={form[key]}
                     onChange={(value) => setForm({ ...form, [key]: value })}
+                <AdminField
+                  key={key}
+                  label={key.replace("_", " ")}
+                >
+                  <input
+                    className={adminInputClass}
+                    value={notesToString(form[key])}
+                    onChange={(e) =>
+                      setForm({ ...form, [key]: stringToNotes(e.target.value) })
+                    }
                     placeholder="bergamot, saffron, cedar"
                   />
                 </AdminField>
@@ -329,6 +391,9 @@ function AdminProductsPage() {
                     type="checkbox"
                     checked={form[key]}
                     onChange={(e) => setForm({ ...form, [key]: e.target.checked })}
+                    onChange={(e) =>
+                      setForm({ ...form, [key]: e.target.checked })
+                    }
                   />
                   {label}
                 </label>
@@ -476,6 +541,10 @@ function AdminProductsPage() {
                       void uploadImages(files).catch((err) => setStatus(err.message));
                     }
                     e.target.value = "";
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) void uploadImage(file).catch((err) => setStatus(err.message));
                   }}
                 />
               </label>
@@ -490,6 +559,9 @@ function AdminProductsPage() {
                   setForm({
                     ...form,
                     collection_ids: [...e.target.selectedOptions].map((o) => o.value),
+                    collection_ids: [...e.target.selectedOptions].map(
+                      (o) => o.value,
+                    ),
                   })
                 }
               >

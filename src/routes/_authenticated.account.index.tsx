@@ -53,13 +53,35 @@ function AccountPage() {
   const router = useRouter();
   const { snapshot, orders, products } = Route.useLoaderData();
   const { wishlist, toggleWishlist, addLine } = useCart();
+  const [isAdmin, setIsAdmin] = useState(false);
   const [profile, setProfile] = useState({
-    full_name: snapshot.profile.full_name ?? "",
-    phone: snapshot.profile.phone ?? "",
+    full_name: text(snapshot.profile.full_name),
+    phone: text(snapshot.profile.phone),
   });
   const [address, setAddress] = useState(blankAddress);
   const [status, setStatus] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadAdminFlag() {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const userId = sessionData.session?.user.id;
+      if (!userId) return;
+
+      const { data } = await supabase.rpc("has_role", {
+        _user_id: userId,
+        _role: "admin",
+      });
+      if (!cancelled) setIsAdmin(Boolean(data));
+    }
+
+    void loadAdminFlag();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const wishedProducts = products.filter((product) => wishlist.includes(product.slug));
 
@@ -121,12 +143,22 @@ function AccountPage() {
               Account
             </h1>
             <p className="mt-4 text-muted-foreground">
-              {snapshot.profile.email}
+              {text(snapshot.profile.email)}
             </p>
           </div>
-          <button onClick={signOut} className="eyebrow border-b border-foreground pb-1 hover:text-accent">
-            Sign Out
-          </button>
+          <div className="flex flex-wrap items-center gap-4">
+            {isAdmin && (
+              <Link
+                to="/admin"
+                className="eyebrow border-b border-accent pb-1 text-accent hover:text-foreground"
+              >
+                Admin panel
+              </Link>
+            )}
+            <button onClick={signOut} className="eyebrow border-b border-foreground pb-1 hover:text-accent">
+              Sign Out
+            </button>
+          </div>
         </div>
 
         {status && <p className="mt-8 text-sm text-accent">{status}</p>}
@@ -163,17 +195,17 @@ function AccountPage() {
                 <p className="eyebrow flex items-center gap-2">
                   <Plus size={14} /> New Address
                 </p>
-                <AccountField label="Label" value={address.label} onChange={(value) => setAddress({ ...address, label: value })} />
-                <AccountField label="Full Name" value={address.full_name} onChange={(value) => setAddress({ ...address, full_name: value })} />
-                <AccountField label="Street" value={address.line1} onChange={(value) => setAddress({ ...address, line1: value })} />
-                <AccountField label="Apartment" value={address.line2} onChange={(value) => setAddress({ ...address, line2: value })} />
+                <AccountField label="Label" value={text(address.label)} onChange={(value) => setAddress({ ...address, label: value })} />
+                <AccountField label="Full Name" value={text(address.full_name)} onChange={(value) => setAddress({ ...address, full_name: value })} />
+                <AccountField label="Street" value={text(address.line1)} onChange={(value) => setAddress({ ...address, line1: value })} />
+                <AccountField label="Apartment" value={text(address.line2)} onChange={(value) => setAddress({ ...address, line2: value })} />
                 <div className="grid grid-cols-2 gap-3">
-                  <AccountField label="City" value={address.city} onChange={(value) => setAddress({ ...address, city: value })} />
-                  <AccountField label="Region" value={address.region} onChange={(value) => setAddress({ ...address, region: value })} />
+                  <AccountField label="City" value={text(address.city)} onChange={(value) => setAddress({ ...address, city: value })} />
+                  <AccountField label="Region" value={text(address.region)} onChange={(value) => setAddress({ ...address, region: value })} />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <AccountField label="Postal" value={address.postal_code} onChange={(value) => setAddress({ ...address, postal_code: value })} />
-                  <AccountField label="Country" value={address.country} onChange={(value) => setAddress({ ...address, country: value })} />
+                  <AccountField label="Postal" value={text(address.postal_code)} onChange={(value) => setAddress({ ...address, postal_code: value })} />
+                  <AccountField label="Country" value={text(address.country)} onChange={(value) => setAddress({ ...address, country: value })} />
                 </div>
                 <label className="flex items-center gap-3 text-sm text-muted-foreground">
                   <input
@@ -243,6 +275,14 @@ function AccountPage() {
   );
 }
 
+function text(value: unknown) {
+  if (value == null) return "";
+  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+    return String(value);
+  }
+  return "";
+}
+
 function AccountField({
   label,
   value,
@@ -276,17 +316,17 @@ function AddressCard({
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="eyebrow !text-accent">
-            {address.label || "Address"} {address.is_default ? "/ Default" : ""}
+            {text(address.label) || "Address"} {address.is_default ? "/ Default" : ""}
           </p>
-          <p className="mt-3 text-sm">{address.full_name}</p>
+          <p className="mt-3 text-sm">{text(address.full_name)}</p>
           <p className="text-sm text-muted-foreground">
-            {address.line1}
-            {address.line2 ? `, ${address.line2}` : ""}
+            {text(address.line1)}
+            {address.line2 ? `, ${text(address.line2)}` : ""}
           </p>
           <p className="text-sm text-muted-foreground">
-            {address.city}, {address.region} {address.postal_code}
+            {text(address.city)}, {text(address.region)} {text(address.postal_code)}
           </p>
-          <p className="text-sm text-muted-foreground">{address.country}</p>
+          <p className="text-sm text-muted-foreground">{text(address.country)}</p>
         </div>
         <button
           onClick={() => onDelete(address.id)}
@@ -342,7 +382,7 @@ function OrderCard({
             <div>
               <p>{item.name_snapshot}</p>
               <p className="text-muted-foreground">
-                {item.volume_snapshot}ml / Qty {item.qty}
+                {item.volume_snapshot != null ? `${text(item.volume_snapshot)}ml` : "—"} / Qty {text(item.qty)}
               </p>
             </div>
           </div>
