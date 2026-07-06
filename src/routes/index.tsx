@@ -85,7 +85,7 @@ function HomePage() {
           >
             <Link
               to="/fragrances/$slug"
-              params={{ slug: "obscura-iv" }}
+              params={{ slug: "obsidian-veil" }}
               className="px-8 md:px-10 py-3 border border-foreground/30 hover:border-foreground hover:bg-foreground hover:text-background eyebrow !tracking-[0.3em] transition-all"
             >
               Shop Fragrance

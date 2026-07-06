@@ -69,6 +69,19 @@ CREATE POLICY "addresses admin read"
   USING (public.has_role(auth.uid(), 'admin'));
 ```
 
+## Demo orders & customers
+
+Migration `20260620150000_demo_orders_and_customers.sql` seeds:
+
+- 4 demo customers (profiles + addresses)
+- 12 orders across the last 14 days (`VR-DEMO0001` … `VR-DEMO0012`)
+- Order line items for top sellers / overview charts
+- A few low-stock variants for the overview panel
+
+Demo shopper password (local testing only): `VenereDemo2026!`
+
+Emails: `elena.marchand@example.com`, `james.whitfield@example.com`, `sofia.alarcon@example.com`, `lucas.bernheim@example.com`
+
 ## Auth URL Configuration
 
 In Supabase Dashboard -> Authentication -> URL Configuration:

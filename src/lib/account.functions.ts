@@ -399,17 +399,6 @@ function normalizeOrder(row: Record<string, unknown>): OrderSummary {
         status: event.status as OrderStatus,
         note: (event.note as string | null) ?? null,
         created_at: event.created_at as string,
-    items: ((row.order_items as Array<Record<string, unknown>> | null) ?? []).map(
-      (item) => ({
-        id: item.id as string,
-        variant_id: (item.variant_id as string | null) ?? null,
-        name_snapshot: item.name_snapshot as string,
-        brand_snapshot: (item.brand_snapshot as string | null) ?? null,
-        volume_snapshot:
-          item.volume_snapshot == null ? null : Number(item.volume_snapshot),
-        image_snapshot: (item.image_snapshot as string | null) ?? null,
-        price_snapshot: Number(item.price_snapshot),
-        qty: Number(item.qty),
       }),
     ),
   };
